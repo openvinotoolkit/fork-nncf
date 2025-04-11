@@ -20,7 +20,7 @@ from nncf.common.graph.operator_metatypes import OperatorMetatype
 from nncf.common.graph.transformations.commands import TargetType
 from nncf.common.quantization.quantizer_propagation.structs import QuantizationTrait
 from nncf.common.tensor_statistics.statistic_point import StatisticPoint
-from nncf.experimental.common.check_feature import is_experimental_torch_tracing_enabled
+from nncf.experimental.common.check_feature import is_torch_tracing_by_torch_function_mode
 from nncf.experimental.common.tensor_statistics.collectors import AbsMaxReducer
 from nncf.experimental.common.tensor_statistics.collectors import MaxAggregator
 from nncf.experimental.common.tensor_statistics.collectors import TensorCollector
@@ -35,7 +35,7 @@ from nncf.torch.graph.transformations.commands import PTTargetPoint
 from nncf.torch.graph.transformations.commands import PTWeightUpdateCommand
 from nncf.torch.layer_utils import COMPRESSION_MODULES
 from nncf.torch.layer_utils import CompressionParameter
-from nncf.torch.layer_utils import StatefullModuleInterface
+from nncf.torch.layer_utils import StatefulModuleInterface
 from nncf.torch.model_graph_manager import get_const_data
 from nncf.torch.model_graph_manager import get_const_node
 from nncf.torch.nncf_network import NNCFNetwork
@@ -43,7 +43,7 @@ from nncf.torch.quantization.default_quantization import DEFAULT_PT_QUANT_TRAIT_
 
 
 @COMPRESSION_MODULES.register()
-class SQMultiply(torch.nn.Module, StatefullModuleInterface):
+class SQMultiply(torch.nn.Module, StatefulModuleInterface):
     SCALE_SHAPE_KEY = "scale_shape"
 
     def __init__(self, scale_shape: Tuple[int, ...]):
@@ -99,14 +99,14 @@ class PTSmoothQuantAlgoBackend(SmoothQuantAlgoBackend):
 
     @staticmethod
     def is_node_with_weights(node: NNCFNode) -> bool:
-        # Metatypes of linears and convolutions guarantee
+        # Metatypes of linear and convolution operators guarantee
         # all nodes with the metatypes have weights, we can skip
         # this check by returning True.
         return True
 
     @staticmethod
     def get_activations_port_id(node: NNCFNode, nncf_graph: NNCFGraph) -> int:
-        # Metatypes of linears and convolutions guarantee
+        # Metatypes of linear and convolution operators guarantee
         # all nodes with the metatypes have 0 activation port id.
         return 0
 
@@ -136,7 +136,7 @@ class PTSmoothQuantAlgoBackend(SmoothQuantAlgoBackend):
     def weight_update_command(
         node_with_weight: NNCFNode, nncf_graph: NNCFGraph, weight_value: torch.Tensor
     ) -> PTWeightUpdateCommand:
-        if is_experimental_torch_tracing_enabled():
+        if is_torch_tracing_by_torch_function_mode():
             weight_node = get_const_node(node_with_weight, node_with_weight.metatype.weight_port_ids[0], nncf_graph)
             return PT2ConstUpdateCommand(weight_node, weight_value)
         return create_command_to_update_weight(node_with_weight, weight_value)
@@ -157,7 +157,7 @@ class PTSmoothQuantAlgoBackend(SmoothQuantAlgoBackend):
         sq_multiply = SQMultiply(scale_value.shape)
         sq_multiply.scale = scale_value
 
-        if is_experimental_torch_tracing_enabled():
+        if is_torch_tracing_by_torch_function_mode():
             return PT2InsertionCommand(target_points=target_points, hook_module=sq_multiply)
         return PTSharedFnInsertionCommand(target_points, sq_multiply, scale_node_name)
 
@@ -175,7 +175,7 @@ class PTSmoothQuantAlgoBackend(SmoothQuantAlgoBackend):
 
     @staticmethod
     def is_node_with_shared_weight(node: NNCFNode, nncf_graph: NNCFGraph) -> bool:
-        if is_experimental_torch_tracing_enabled():
+        if is_torch_tracing_by_torch_function_mode():
             weight_node = get_const_node(node, node.metatype.weight_port_ids[0], nncf_graph)
             output_edges = nncf_graph.get_next_nodes(weight_node)
             return len(output_edges) > 1

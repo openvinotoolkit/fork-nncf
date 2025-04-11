@@ -22,7 +22,7 @@ from nncf.common.graph.operator_metatypes import OUTPUT_NOOP_METATYPES
 from nncf.common.graph.operator_metatypes import OperatorMetatype
 from nncf.common.graph.operator_metatypes import OperatorMetatypeRegistry
 from nncf.common.hardware.opset import HWConfigOpName
-from nncf.experimental.common.check_feature import is_experimental_torch_tracing_enabled
+from nncf.experimental.common.check_feature import is_torch_tracing_by_torch_function_mode
 from nncf.torch.dynamic_graph.graph import DynamicGraph
 from nncf.torch.dynamic_graph.structs import NamespaceTarget
 
@@ -729,7 +729,7 @@ class PTBatchNormMetatype(PTOperatorMetatype):
     }
     subtypes = [PTModuleBatchNormMetatype]
 
-    if is_experimental_torch_tracing_enabled():
+    if is_torch_tracing_by_torch_function_mode():
         # torch.batch_norm
         weight_port_ids = [1]
         bias_port_id = 2
@@ -1200,7 +1200,9 @@ OP_NAMES_WITH_WEIGHTS = [x for meta in OPERATORS_WITH_WEIGHTS_METATYPES for x in
 
 QUANTIZE_NODE_TYPES = [
     "symmetric_quantize",
+    "symmetric_quantize_lora",
     "asymmetric_quantize",
+    "asymmetric_quantize_lora",
     "quantize_per_tensor",
     "dequantize_per_tensor",
     "quantize_per_channel",
@@ -1217,3 +1219,5 @@ OPERATIONS_OUTPUT_HAS_NO_BATCH_AXIS = [
     PTModuleEmbeddingBagMetatype,
     PTModuleEmbeddingMetatype,
 ]
+
+MATMUL_METATYPES = [PTLinearMetatype, PTMatMulMetatype, PTAddmmMetatype]
