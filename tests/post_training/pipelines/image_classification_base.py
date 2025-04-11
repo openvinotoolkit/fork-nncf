@@ -18,6 +18,7 @@ import openvino as ov
 import torch
 from datasets import Split
 from datasets import SplitGenerator
+from datasets import VerificationMode
 from datasets import load_dataset_builder
 from sklearn.metrics import accuracy_score
 from torchvision import transforms
@@ -56,7 +57,7 @@ def hf_imagenet_1k_val(model_transform):
         ]
 
     builder_instance._split_generators = types.MethodType(val_split_generators, builder_instance)
-    builder_instance.download_and_prepare()
+    builder_instance.download_and_prepare(verification_mode=VerificationMode.NO_CHECKS)
     dataset = builder_instance.as_dataset(split=Split.VALIDATION)
 
     def transform_fn(examples):
