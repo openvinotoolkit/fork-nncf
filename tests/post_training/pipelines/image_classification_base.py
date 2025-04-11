@@ -37,7 +37,7 @@ def hf_imagenet_1k_val(model_transform):
     load_dataset("imagenet-1k") loads full dataset, which is not needed.
     """
 
-    builder_instance = load_dataset_builder("imagenet-1k")
+    builder_instance = load_dataset_builder("imagenet-1k", trust_remote_code=True)
 
     def val_split_generators(self, dl_manager):
         DATA_URL_VAL = {
