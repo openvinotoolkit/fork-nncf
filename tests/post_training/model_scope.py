@@ -10,6 +10,7 @@
 # limitations under the License.
 
 import copy
+import sys
 from typing import Dict, List
 
 import nncf
@@ -562,8 +563,17 @@ def generate_tests_scope(models_list: List[Dict]) -> Dict[str, dict]:
     reported_name_to_model_id_mapping = {mc["reported_name"]: mc["model_id"] for mc in models_list}
     tests_scope = {}
     fp32_models = set()
+
+    # Pytest config is not available here, so use sys.argv to check if --fp32 and --cuda options are passed.
+    enable_fp32 = "--fp32" in sys.argv
+    enable_cuda = "--cuda" in sys.argv
+
     for test_model_param in models_list:
         for backend in test_model_param["backends"] + [BackendType.FP32]:
+            if backend == BackendType.FP32 and not enable_fp32:
+                continue
+            if backend in [BackendType.CUDA_FX_TORCH, BackendType.CUDA_TORCH] and not enable_cuda:
+                continue
             model_param = copy.deepcopy(test_model_param)
             if "is_batch_size_supported" not in model_param:  # Set default value of is_batch_size_supported.
                 model_param["is_batch_size_supported"] = True

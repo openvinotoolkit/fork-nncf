@@ -279,6 +279,7 @@ def test_ptq_quantization(
     capsys: pytest.CaptureFixture,
     extra_columns: bool,
     memory_monitor: bool,
+    use_avx2: bool,
 ):
     run_pipeline(
         test_case_name,
