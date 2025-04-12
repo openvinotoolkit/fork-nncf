@@ -46,6 +46,7 @@ jobs:
       - name: Run examples test scope
         run: |
           python -m pytest -s -ra tests/post_training/test_quantize_conformance.py::test_ptq_quantization \
+            --forked \
             --junit-xml=pytest-results.xml \
             --durations-path=tests/post_training/data/ptq_test_durations.json \
             --splitting-algorithm=least_duration \
