@@ -337,7 +337,11 @@ class BaseTestPipeline(ABC):
         """
         self.prepare()
         self.compress()
+        del self.model
+        gc.collect()
         self.save_compressed_model()
+        del self.compressed_model
+        gc.collect()
         self.get_num_compressed()
         self.validate()
         self.run_bench()

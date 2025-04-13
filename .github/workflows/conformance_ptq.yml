@@ -15,7 +15,7 @@ on:
 jobs:
   examples-cpu:
     name: Post Training Quantization [${{ matrix.group }}/10]
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest-32-cores
     timeout-minutes: 180
     strategy:
       fail-fast: false
