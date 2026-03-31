@@ -2,7 +2,7 @@ torchvision
 tqdm
 scikit-learn
 fastdownload
-onnx==1.17.0
+onnx==1.21.0rc1
 onnxruntime==1.19.2
 openvino==2025.1
 numpy<2
